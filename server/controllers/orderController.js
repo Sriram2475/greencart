@@ -101,33 +101,58 @@ export const stripeWebhooks=async (req,res) => {
     // Handle the event
     switch (event.type){
 
-         case "checkout.session.completed": {
-        // case "payment_intent.succeeded":{
-            const paymentIntent=event.data.object;
-            const paymentIntentId=paymentIntent.id;
-            // Getting Session Metadata
-            const session=await stripeInstance.checkout.sessions.list({
-                payment_intent:paymentIntentId,
-            });
+        //  case "checkout.session.completed": {
+        // // case "payment_intent.succeeded":{
+        //     const paymentIntent=event.data.object;
+        //     const paymentIntentId=paymentIntent.id;
+        //     // Getting Session Metadata
+        //     const session=await stripeInstance.checkout.sessions.list({
+        //         payment_intent:paymentIntentId,
+        //     });
 
-            console.log("🧾 Session metadata:", session.metadata);
+        //     console.log("🧾 Session metadata:", session.metadata);
 
-            // ✅ Guard for missing metadata
-            if (!session.metadata) {
-                console.log("⚠️ No metadata found — skipping this event");
-                break;
-            }
+        //     // ✅ Guard for missing metadata
+        //     if (!session.metadata) {
+        //         console.log("⚠️ No metadata found — skipping this event");
+        //         break;
+        //     }
 
-            const {orderId,userId}=session.data[0].metadata;
+        //     const {orderId,userId}=session.data[0].metadata;
 
-            // Mark Payment as paid
-            await Order.findByIdAndUpdate(orderId,{isPaid:true});
-            // Clear user cart
-            await User.findByIdAndUpdate(userId,{cartItems:{}});
-            break;
-        }
+        //     // Mark Payment as paid
+        //     await Order.findByIdAndUpdate(orderId,{isPaid:true});
+        //     // Clear user cart
+        //     await User.findByIdAndUpdate(userId,{cartItems:{}});
+        //     break;
+        // }
          
         
+
+
+        case "checkout.session.completed": {
+        const session = event.data.object;
+
+        console.log("🧾 Session metadata:", session.metadata);
+
+        if (!session.metadata) {
+            console.log("⚠️ No metadata found — skipping this event");
+            break;
+        }
+
+        const { orderId, userId } = session.metadata;
+
+        await Order.findByIdAndUpdate(orderId, {
+            isPaid: true,
+            paymentType: "Online",
+        });
+        await User.findByIdAndUpdate(userId, { cartItems: {} });
+
+        console.log("✅ Order marked paid:", orderId);
+        break;
+        }
+
+
         case "checkout.session.expired":{
 
         // case "payment_intent.payment_failed":{
