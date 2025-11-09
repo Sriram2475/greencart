@@ -143,8 +143,8 @@ export const stripeWebhooks=async (req,res) => {
         const { orderId, userId } = session.metadata;
 
         await Order.findByIdAndUpdate(orderId, {
-            isPaid: true,
-            paymentType: "Online",
+            ispaid: true,
+            // paymentType: "Online",
         });
         await User.findByIdAndUpdate(userId, { cartItems: {} });
 
