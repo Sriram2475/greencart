@@ -93,18 +93,31 @@ export const stripeWebhooks=async (req,res) => {
             process.env.STRIPE_WEBHOOK_SECRET
         );
     } catch (error) {
+        console.log("❌ Webhook signature verification failed:", error.message);
         res.status(400).send(`Webhook Error: ${error.message}`); 
     }
 
+    console.log("🔔 Stripe event received:", event.type);
     // Handle the event
     switch (event.type){
-        case "payment_intent.succeeded":{
+
+         case "checkout.session.completed": {
+        // case "payment_intent.succeeded":{
             const paymentIntent=event.data.object;
             const paymentIntentId=paymentIntent.id;
             // Getting Session Metadata
             const session=await stripeInstance.checkout.sessions.list({
                 payment_intent:paymentIntentId,
             });
+
+            console.log("🧾 Session metadata:", session.metadata);
+
+            // ✅ Guard for missing metadata
+            if (!session.metadata) {
+                console.log("⚠️ No metadata found — skipping this event");
+                break;
+            }
+
             const {orderId,userId}=session.data[0].metadata;
 
             // Mark Payment as paid
@@ -113,14 +126,22 @@ export const stripeWebhooks=async (req,res) => {
             await User.findByIdAndUpdate(userId,{cartItems:{}});
             break;
         }
+         
+        
+        case "checkout.session.expired":{
 
-        case "payment_intent.payment_failed":{
+        // case "payment_intent.payment_failed":{
             const paymentIntent=event.data.object;
             const paymentIntentId=paymentIntent.id;
+
+
             // Getting Session Metadata
             const session=await stripeInstance.checkout.sessions.list({
                 payment_intent:paymentIntentId,
             });
+
+            console.log("🧾 Session metadata:", session.metadata);
+
             const {orderId}=session.data[0].metadata;
 
             await Order.findByIdAndDelete(orderId);
@@ -128,6 +149,7 @@ export const stripeWebhooks=async (req,res) => {
         }
 
         default:
+             
             console.error(`Unhandled event type ${event.type}`);
             break;
     }
