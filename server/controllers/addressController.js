@@ -6,7 +6,7 @@ export const addAddress=async (req,res) => {
     try {
         // const {userId,address}=req.body;
         const { address } = req.body;
-        const userId = req.userId; // ✅ get from middleware
+        const userId = req.userId; //  get from middleware
         await Address.create({...address,userId});
         res.json({success:true,message:"Address added successfully"});
     } catch (error) {
@@ -20,7 +20,7 @@ export const addAddress=async (req,res) => {
 export const getAddress=async (req,res) => {
     try {
         // const {userId}=req.body;
-        const userId = req.userId; // ✅ from middleware
+        const userId = req.userId; // from middleware
         const addresses = await Address.find({userId});
         res.json({success:true,addresses});
     } catch (error) {

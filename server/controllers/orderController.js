@@ -1,16 +1,15 @@
 import Order from "../models/Order.js";
 import User from "../models/User.js";
-
 import Product from "../models/Product.js";
 import stripe from "stripe";
-
-
 
 // Place Order Stripe : /api/order/stripe
 
 export const placeOrderStripe=async (req,res) => {
        try {
         // const {userId,items,address}=req.body;
+
+
         const { items, address } = req.body;
         const userId = req.userId; // ✅ from middleware
         const {origin}=req.headers;
@@ -81,6 +80,7 @@ export const placeOrderStripe=async (req,res) => {
 // Stripe Webhooks to Verify Payments Action :/stripe
 
 export const stripeWebhooks=async (req,res) => {
+
     //Stripe Gateway Initialize
     const stripeInstance=new stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -101,77 +101,28 @@ export const stripeWebhooks=async (req,res) => {
     // Handle the event
     switch (event.type){
 
-        //  case "checkout.session.completed": {
-        // // case "payment_intent.succeeded":{
-        //     const paymentIntent=event.data.object;
-        //     const paymentIntentId=paymentIntent.id;
-        //     // Getting Session Metadata
-        //     const session=await stripeInstance.checkout.sessions.list({
-        //         payment_intent:paymentIntentId,
-        //     });
-
-        //     console.log("🧾 Session metadata:", session.metadata);
-
-        //     // ✅ Guard for missing metadata
-        //     if (!session.metadata) {
-        //         console.log("⚠️ No metadata found — skipping this event");
-        //         break;
-        //     }
-
-        //     const {orderId,userId}=session.data[0].metadata;
-
-        //     // Mark Payment as paid
-        //     await Order.findByIdAndUpdate(orderId,{ispaid:true});
-        //     // Clear user cart
-        //     await User.findByIdAndUpdate(userId,{cartItems:{}});
-        //     break;
-        // }
-         
-        
-
-
+ 
         case "checkout.session.completed": {
         const session = event.data.object;
-
-        console.log("🧾 Session metadata:", session.metadata);
-
-        // if (!session.metadata) {
-        //     console.log("⚠️ No metadata found — skipping this event");
-        //     break;
-        // }
 
         const { orderId, userId } = session.metadata;
 
         await Order.findByIdAndUpdate(orderId, {
             ispaid: true,
-            // paymentType: "Online",
         });
         await User.findByIdAndUpdate(userId, { cartItems: {} });
-
-        console.log("✅ Order marked paid:", orderId);
         break;
         }
 
+        case "checkout.session.expired": {
+        const session = event.data.object;
 
-        case "checkout.session.expired":{
+        const { orderId } = session.metadata;
 
-        // case "payment_intent.payment_failed":{
-            const paymentIntent=event.data.object;
-            const paymentIntentId=paymentIntent.id;
-
-
-            // Getting Session Metadata
-            const session=await stripeInstance.checkout.sessions.list({
-                payment_intent:paymentIntentId,
-            });
-
-            console.log("🧾 Session metadata:", session.metadata);
-
-            const {orderId}=session.data[0].metadata;
-
-            await Order.findByIdAndDelete(orderId);
-            break;
-        }
+        // Delete the unpaid order
+        await Order.findByIdAndDelete(orderId);
+        break;
+        }   
 
         default:
              
@@ -186,20 +137,25 @@ export const stripeWebhooks=async (req,res) => {
 
 export const placeOrderCOD=async (req,res) => {
        try {
+
         // const {userId,items,address}=req.body;
+        
         const { items, address } = req.body;
-        const userId = req.userId; // ✅ from middleware
+        const userId = req.userId; // from middleware
 
         if(!address || items.length===0){
             return res.json({success:false,message:"Invalid data"})
         }
+
         // Calculate Amount Using Items
+
         let amount=await items.reduce(async (acc,item) => {
             const product=await Product.findById(item.product);
             return (await acc)+product.offerPrice * item.quantity;
-        },0) // Initial acc value 0
+        },0)   // Initial acc value 0
 
         // Add Tax Charge (2%)
+
         amount+=Math.floor(amount*0.02);
         await Order.create({
             userId,
@@ -222,7 +178,8 @@ export const placeOrderCOD=async (req,res) => {
 export const getUserOrders=async (req,res) => {
     try {
         // const {userId}=req.body;
-        const userId = req.userId; // ✅ from middleware
+
+        const userId = req.userId; // from middleware
 
         const orders=await Order.find({
             userId,
@@ -250,3 +207,59 @@ export const getAllOrders=async (req,res) => {
     res.json({success:false,message:error.message});
     }
 }
+
+
+
+  // Handle the event
+    // switch (event.type){
+
+
+       // case "payment_intent.succeeded":{
+
+        //     const paymentIntent=event.data.object;
+        //     const paymentIntentId=paymentIntent.id;
+        //     // Getting Session Metadata
+        //     const session=await stripeInstance.checkout.sessions.list({
+        //         payment_intent:paymentIntentId,
+        //     });
+
+        //     console.log("Session metadata:", session.metadata);
+
+        //     // Guard for missing metadata
+        //     if (!session.metadata) {
+        //         console.log("No metadata found — skipping this event");
+        //         break;
+        //     }
+
+        //     const {orderId,userId}=session.data[0].metadata;
+
+        //     // Mark Payment as paid
+        //     await Order.findByIdAndUpdate(orderId,{ispaid:true});
+        //     // Clear user cart
+        //     await User.findByIdAndUpdate(userId,{cartItems:{}});
+        //     break;
+        // }
+
+
+        // case "payment_intent.payment_failed":{
+
+        //     const paymentIntent=event.data.object;
+        //     const paymentIntentId=paymentIntent.id;
+
+
+        //     // Getting Session Metadata
+        //     const session=await stripeInstance.checkout.sessions.list({
+        //         payment_intent:paymentIntentId,
+        //     });
+
+        //     const {orderId}=session.data[0].metadata;
+
+        //     await Order.findByIdAndDelete(orderId);
+        //     break;
+        // }
+        
+    //     default:
+             
+    //         console.error(`Unhandled event type ${event.type}`);
+    //         break;
+    // }

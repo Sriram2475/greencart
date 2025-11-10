@@ -44,7 +44,7 @@ const Cart = () => {
     const placeOrder=async()=>{
         try {
             if(!selectedAddress){
-                return toast.error();
+                return toast.error("Please select a delivery address");
             }
 
             // Place Oder with COD
