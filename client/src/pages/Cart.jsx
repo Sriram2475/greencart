@@ -2,6 +2,7 @@ import {useEffect, useState} from 'react'
 import { useAppContext } from '../context/AppContext'
 import { assets, dummyAddress } from '../assets/assets'
 import toast from 'react-hot-toast'
+import { useLocation } from "react-router-dom";
 
 const Cart = () => {
   
@@ -12,6 +13,15 @@ const Cart = () => {
     const [showAddress, setShowAddress] = useState(false)
     const [selectedAddress,setSelectedAddress]=useState(null)
     const [paymentOption,setPaymentOption]=useState("COD")
+
+
+     const location = useLocation();
+    useEffect(() => {
+        const query = new URLSearchParams(location.search);
+        if (query.get("payment") === "failed") {
+        toast.error("Payment was cancelled!");
+        }
+    }, [location.search]);
 
     const getCart=()=>{
         let tempArray=[]

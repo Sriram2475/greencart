@@ -62,7 +62,8 @@ export const placeOrderStripe=async (req,res) => {
             line_items,
             mode:"payment",
             success_url:`${origin}/loader?next=my-orders`,
-            cancel_url:`${origin}/cart`,
+            // cancel_url:`${origin}/cart`,
+            cancel_url: `${origin}/cart?payment=failed`,
             metadata:{
                 orderId:order._id.toString(),
                 userId,

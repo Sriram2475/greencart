@@ -2,6 +2,7 @@ import React from "react";
 import { useAppContext } from "../context/AppContext";
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
+import toast from "react-hot-toast";
 
 const Loading = () => {
   const { navigate } = useAppContext();
@@ -10,6 +11,7 @@ const Loading = () => {
   const nextUrl = query.get("next");
 
   useEffect(() => {
+     toast.success("Order placed successfully")
     if (nextUrl) {
       setTimeout(() => {
         navigate(`${nextUrl}`);
