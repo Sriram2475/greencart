@@ -49,6 +49,14 @@ const Navbar = () => {
         <NavLink to="/">Home</NavLink>
         <NavLink to="/products">All Products</NavLink>
         <NavLink to="/">Contact</NavLink>
+         {/* <NavLink to='/seller'>Seller Dashboard</NavLink> */}
+
+     <button 
+    onClick={() => navigate('/seller')} 
+    className="cursor-pointer px-6 py-2 border border-primary text-primary hover:bg-primary/10 rounded-full transition font-medium">
+    Seller Dashboard
+</button>
+
 
         <div className="hidden lg:flex items-center text-sm gap-2 border border-gray-300 px-3 rounded-full">
           <input
@@ -103,6 +111,8 @@ const Navbar = () => {
             </ul>
           </div>
         )}
+
+    
       </div>
 
       <div className="flex items-center gap-6 sm:hidden">
@@ -153,28 +163,53 @@ const Navbar = () => {
               My Orders
             </NavLink>
           )}
+          
           <NavLink to="/" onClick={() => setOpen(false)}>
             Contact
           </NavLink>
 
-          {!user ? (
-            <button
-              onClick={() => {
-                setOpen(false);
-                setshowUserLogin(true);
-              }}
-              className="cursor-pointer px-6 py-2 mt-2 bg-primary hover:bg-primary-dull transition text-white rounded-full text-sm"
-            >
-              Login
-            </button>
-          ) : (
-            <button
-              onClick={logout}
-              className="cursor-pointer px-6 py-2 mt-2 bg-primary hover:bg-primary-dull transition text-white rounded-full text-sm"
-            >
-              Logout
-            </button>
-          )}
+
+
+
+     
+
+  
+<div className="flex items-center gap-3 mt-3 w-full">
+  {!user ? (
+    <button
+      onClick={() => {
+        setOpen(false);
+        setshowUserLogin(true);
+      }}
+      className="flex-1 cursor-pointer px-4 py-2 bg-primary hover:bg-primary-dull transition text-white rounded-full text-sm text-center font-medium"
+    >
+      Login
+    </button>
+  ) : (
+    <button
+      onClick={logout}
+      className="flex-1 cursor-pointer px-4 py-2 bg-primary hover:bg-primary-dull transition text-white rounded-full text-sm text-center font-medium"
+    >
+      Logout
+    </button>
+
+    
+  )}
+
+    <button
+    onClick={() => {
+      setOpen(false);
+      navigate('/seller');
+    }}
+    className="flex-1 cursor-pointer px-4 py-2 border border-primary text-primary hover:bg-primary/10 transition rounded-full text-sm text-center font-medium"
+  >
+    Seller Login
+  </button>
+
+</div>
+
+
+          
         </div>
       )}
     </nav>
